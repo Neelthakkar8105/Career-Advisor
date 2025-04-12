@@ -1,0 +1,65 @@
+
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Trending Jobs</h2>
+    
+    <div class="row">
+        {% for job in trending_jobs %}
+        <div class="col-lg-4 mb-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h4 class="card-title mb-3">{{ job.career_path }}</h4>
+                    
+                    <!-- Demand Score -->
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Demand Score</h6>
+                        <div class="d-flex align-items-center">
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar bg-primary" role="progressbar" 
+                                     style="width: {{ job.demand_score|floatformat:0 }}0%" 
+                                     aria-valuenow="{{ job.demand_score|floatformat:0 }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="10"></div>
+                            </div>
+                            <span class="ms-2 text-primary fw-bold">{{ job.demand_score }}/10</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Salary Range -->
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Salary Range</h6>
+                        <p class="mb-1">Average: ${{ job.salary_range.average|floatformat:0|intcomma }}</p>
+                        <p class="small text-muted">
+                            Range: ${{ job.salary_range.min|floatformat:0|intcomma }} - 
+                            ${{ job.salary_range.max|floatformat:0|intcomma }}
+                        </p>
+                    </div>
+                    
+                    <!-- Trending Skills -->
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Top Skills</h6>
+                        <div class="d-flex flex-wrap gap-1">
+                            {% for skill in job.trending_skills|slice:":5" %}
+                            <span class="badge bg-secondary">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Top Locations -->
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Top Locations</h6>
+                        <ul class="list-unstyled small">
+                            {% for location in job.top_locations|slice:":3" %}
+                            <li>{{ location }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

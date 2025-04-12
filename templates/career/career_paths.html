@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Career Paths - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .career-path-card {
+        transition: all 0.3s ease;
+        border-left: 5px solid var(--bs-primary);
+    }
+    .alternative-path-card {
+        transition: all 0.3s ease;
+        border-left: 5px solid var(--bs-secondary);
+    }
+    .skill-badge {
+        display: inline-block;
+        padding: 0.35rem 0.65rem;
+        margin: 0.25rem;
+        border-radius: 50rem;
+        background-color: rgba(var(--bs-primary-rgb), 0.15);
+        color: var(--bs-primary);
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    }
+    .step-item {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 1rem;
+    }
+    .step-item:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.35rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        background-color: var(--bs-primary);
+        border-radius: 50%;
+    }
+    .step-item:after {
+        content: '';
+        position: absolute;
+        left: 0.625rem;
+        top: 1.6rem;
+        width: 2px;
+        height: calc(100% - 0.35rem);
+        background-color: var(--bs-primary);
+    }
+    .step-item:last-child:after {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Career Path Recommendations</h2>
+            <p class="text-muted">
+                Based on your skills assessment, we've identified optimal career paths that match your strengths and interests.
+                Explore these recommendations to help plan your next career move.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    {% if not career_path %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-route fa-4x mb-3 text-muted"></i>
+            <h4>No Career Path Recommendations Yet</h4>
+            <p class="text-muted mb-4">
+                Complete a skills assessment to receive personalized career path recommendations.
+                Our AI will analyze your strengths, interests, and experience to suggest optimal career paths.
+            </p>
+            <a href="{% url 'skills_assessment' %}" class="btn btn-primary">
+                <i class="fas fa-brain me-1"></i> Take Skills Assessment
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <!-- Main Career Path Recommendation -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Primary Career Path -->
+            <div class="card border-0 shadow-sm career-path-card mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0 text-primary">{{ career_path.primary_path }}</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-4">
+                        <h5 class="mb-3">Path Overview</h5>
+                        <p>{{ career_path.growth_potential }}</p>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">Required Skills</h5>
+                        <div>
+                            {% for skill in career_path.required_skills %}
+                            <span class="skill-badge">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <h5 class="mb-3">Recommended Steps</h5>
+                        <div class="steps-container">
+                            {% for step in career_path.recommended_steps %}
+                            <div class="step-item">
+                                <p class="mb-0">{{ step }}</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Alternative Career Paths -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0">Alternative Career Paths</h4>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted mb-4">
+                        These are other career paths that align well with your skills and interests. 
+                        Consider these as viable alternatives to your primary recommendation.
+                    </p>
+                    
+                    <div class="row">
+                        {% for path in career_path.alternative_paths %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 alternative-path-card">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{ path }}</h5>
+                                    <p class="card-text small text-muted">
+                                        This path aligns with your skills profile and offers alternative growth opportunities.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Job Market Sidebar -->
+        <div class="col-lg-4">
+            <!-- Job Market Insights -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Job Market Insights</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% if job_market %}
+                    <div class="mb-3">
+                        <h6>Industry Demand</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ job_market.demand_score|floatformat:0 }}0%"></div>
+                            </div>
+                            <span class="text-primary fw-bold">{{ job_market.demand_score|floatformat:1 }}/10</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Salary Range</h6>
+                        <div class="d-flex align-items-center mb-3">
+                            <span class="me-2 text-muted">${{ job_market.salary_range.min|floatformat:0 }}</span>
+                            <div class="progress flex-grow-1" style="height: 4px;">
+                                <div class="progress-bar" role="progressbar" style="width: 100%"></div>
+                            </div>
+                            <span class="ms-2 text-muted">${{ job_market.salary_range.max|floatformat:0 }}</span>
+                        </div>
+                        <p class="text-center mb-0">
+                            <span class="text-primary fw-bold">Average: ${{ job_market.salary_range.average|floatformat:0 }}</span>
+                        </p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Top Hiring Locations</h6>
+                        <ul class="list-group list-group-flush">
+                            {% for location in job_market.top_locations|slice:":5" %}
+                            <li class="list-group-item bg-transparent px-0 py-2">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i> {{ location }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>In-Demand Skills</h6>
+                        <div>
+                            {% for skill in job_market.trending_skills %}
+                            <span class="badge bg-secondary my-1 me-1">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h6>Job Outlook</h6>
+                        <p class="small mb-0">{{ job_market.job_outlook }}</p>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Job market data is not available for this career path.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Related Resources -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Next Steps</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'network_analysis' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-project-diagram me-1"></i> View Network Analysis
+                        </a>
+                        <a href="{% url 'skills_assessment' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Retake Assessment
+                        </a>
+                        <a href="{% url 'resume_analysis' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt me-1"></i> Optimize Resume
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

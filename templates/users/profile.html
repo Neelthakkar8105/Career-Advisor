@@ -1,0 +1,368 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Profile - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    .section-heading {
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--bs-secondary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2>Profile Information</h2>
+            <p class="text-muted">
+                Complete your profile to get more accurate career recommendations.
+                The more information you provide, the better our AI can tailor its advice.
+            </p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <!-- Profile sidebar with status information -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-5x text-primary"></i>
+                    </div>
+                    <h5>{{ user.get_full_name }}</h5>
+                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Profile Completion</span>
+                        <span class="text-success fw-bold">{{ profile_completion }}%</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ profile_completion }}%"></div>
+                    </div>
+                    <div class="mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-chart-line me-1"></i> View Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">Basic Information</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ u_form.username|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ u_form.email|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ u_form.first_name|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ u_form.last_name|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Personal Details Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">Personal Details</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ p_form.birth_date|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ p_form.location|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ p_form.current_position|as_crispy_field }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ p_form.desired_position|as_crispy_field }}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    {{ p_form.bio|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Resume Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">Resume</h4>
+                            <div class="mb-3">
+                                {{ p_form.resume|as_crispy_field }}
+                            </div>
+                        </div>
+                        
+                        <!-- Social Links Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">Professional Links</h4>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    {{ p_form.linkedin_url|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ p_form.github_url|as_crispy_field }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    {{ p_form.portfolio_url|as_crispy_field }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Education Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">
+                                Education
+                                <button type="button" class="btn btn-sm btn-outline-primary float-end add-form" data-formset="education">
+                                    <i class="fas fa-plus"></i> Add Education
+                                </button>
+                            </h4>
+                            
+                            {{ education_formset.management_form }}
+                            <div id="education-forms">
+                                {% for form in education_formset %}
+                                <div class="education-form mb-3 border rounded p-3 position-relative {% if forloop.first %}first-form{% endif %}">
+                                    {% if not forloop.first %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-form">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.institution|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.degree|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.field_of_study|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.start_date|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.end_date|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.current|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            {{ form.description|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% for hidden in form.hidden_fields %}
+                                    {{ hidden }}
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Work Experience Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">
+                                Work Experience
+                                <button type="button" class="btn btn-sm btn-outline-primary float-end add-form" data-formset="work">
+                                    <i class="fas fa-plus"></i> Add Experience
+                                </button>
+                            </h4>
+                            
+                            {{ work_formset.management_form }}
+                            <div id="work-forms">
+                                {% for form in work_formset %}
+                                <div class="work-form mb-3 border rounded p-3 position-relative {% if forloop.first %}first-form{% endif %}">
+                                    {% if not forloop.first %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-form">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.company|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.position|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.start_date|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.end_date|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.current|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-12 mb-3">
+                                            {{ form.description|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% for hidden in form.hidden_fields %}
+                                    {{ hidden }}
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Section -->
+                        <div class="form-section">
+                            <h4 class="section-heading">
+                                Skills
+                                <button type="button" class="btn btn-sm btn-outline-primary float-end add-form" data-formset="skill">
+                                    <i class="fas fa-plus"></i> Add Skill
+                                </button>
+                            </h4>
+                            
+                            {{ skill_formset.management_form }}
+                            <div id="skill-forms">
+                                {% for form in skill_formset %}
+                                <div class="skill-form mb-3 border rounded p-3 position-relative {% if forloop.first %}first-form{% endif %}">
+                                    {% if not forloop.first %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-form">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                    {% endif %}
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form.name|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.level|as_crispy_field }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form.years_of_experience|as_crispy_field }}
+                                        </div>
+                                    </div>
+                                    
+                                    {% for hidden in form.hidden_fields %}
+                                    {{ hidden }}
+                                    {% endfor %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button class="btn btn-primary btn-lg" type="submit">Save Profile</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to handle "Add" button clicks for formsets
+        document.querySelectorAll('.add-form').forEach(button => {
+            button.addEventListener('click', function() {
+                const formsetName = this.dataset.formset;
+                const formContainer = document.getElementById(`${formsetName}-forms`);
+                const totalForms = document.querySelector(`#id_${formsetName}-TOTAL_FORMS`);
+                const formCount = parseInt(totalForms.value);
+                
+                // Clone the first form
+                const firstForm = formContainer.querySelector(`.${formsetName}-form.first-form`);
+                const newForm = firstForm.cloneNode(true);
+                
+                // Update form ID and names
+                newForm.classList.remove('first-form');
+                const formRegex = new RegExp(`${formsetName}-0-`, 'g');
+                newForm.innerHTML = newForm.innerHTML.replace(formRegex, `${formsetName}-${formCount}-`);
+                
+                // Clear input values
+                newForm.querySelectorAll('input, textarea, select').forEach(input => {
+                    if (input.type !== 'hidden' || !input.name.includes('DELETE')) {
+                        if (input.type === 'checkbox') {
+                            input.checked = false;
+                        } else {
+                            input.value = '';
+                        }
+                    }
+                });
+                
+                // Add delete button functionality
+                const deleteButton = newForm.querySelector('.delete-form');
+                if (!deleteButton) {
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-2 delete-form';
+                    deleteBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    deleteBtn.addEventListener('click', handleDeleteForm);
+                    newForm.appendChild(deleteBtn);
+                } else {
+                    deleteButton.addEventListener('click', handleDeleteForm);
+                }
+                
+                // Append the new form and update total forms
+                formContainer.appendChild(newForm);
+                totalForms.value = formCount + 1;
+            });
+        });
+        
+        // Add event listeners to existing delete buttons
+        function handleDeleteForm() {
+            const form = this.closest('.education-form, .work-form, .skill-form');
+            const deleteField = form.querySelector('input[name$="-DELETE"]');
+            
+            if (deleteField) {
+                deleteField.value = 'on';
+                form.style.display = 'none';
+            } else {
+                form.remove();
+            }
+        }
+        
+        document.querySelectorAll('.delete-form').forEach(button => {
+            button.addEventListener('click', handleDeleteForm);
+        });
+        
+        // Handle the checkbox for current education/work experience
+        document.querySelectorAll('input[name$="current"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const formGroup = this.closest('.education-form, .work-form');
+                const endDateField = formGroup.querySelector('input[name$="end_date"]');
+                
+                if (this.checked) {
+                    endDateField.value = '';
+                    endDateField.disabled = true;
+                } else {
+                    endDateField.disabled = false;
+                }
+            });
+            
+            // Initialize state
+            if (checkbox.checked) {
+                const formGroup = checkbox.closest('.education-form, .work-form');
+                const endDateField = formGroup.querySelector('input[name$="end_date"]');
+                endDateField.disabled = true;
+            }
+        });
+    });
+</script>
+{% endblock %}

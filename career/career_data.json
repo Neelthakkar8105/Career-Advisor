@@ -1,0 +1,248 @@
+[
+  {
+    "path": "Software Development",
+    "technical_skills": {
+      "programming": 5,
+      "data_analysis": 3,
+      "design": 2,
+      "writing": 2,
+      "project_management": 3
+    },
+    "soft_skills": {
+      "communication": 3,
+      "teamwork": 4,
+      "leadership": 2,
+      "problem_solving": 5,
+      "adaptability": 4
+    },
+    "interests": {
+      "technology": 5,
+      "business": 2,
+      "arts": 1,
+      "sciences": 3,
+      "helping_others": 2
+    },
+    "jobs": [
+      {
+        "title": "Software Engineer",
+        "skills": ["programming", "problem solving", "teamwork", "communication"],
+        "keywords": ["Java", "Python", "JavaScript", "agile", "full stack", "backend", "frontend", "API", "algorithms", "data structures"]
+      },
+      {
+        "title": "Frontend Developer",
+        "skills": ["programming", "design", "problem solving", "teamwork"],
+        "keywords": ["HTML", "CSS", "JavaScript", "React", "Angular", "Vue", "UI/UX", "responsive design", "web standards", "accessibility"]
+      },
+      {
+        "title": "Backend Developer",
+        "skills": ["programming", "problem solving", "data analysis"],
+        "keywords": ["Java", "Python", "C#", "Node.js", "databases", "SQL", "APIs", "microservices", "scalability", "performance"]
+      }
+    ]
+  },
+  {
+    "path": "Data Science",
+    "technical_skills": {
+      "programming": 4,
+      "data_analysis": 5,
+      "design": 1,
+      "writing": 3,
+      "project_management": 2
+    },
+    "soft_skills": {
+      "communication": 4,
+      "teamwork": 3,
+      "leadership": 2,
+      "problem_solving": 5,
+      "adaptability": 3
+    },
+    "interests": {
+      "technology": 4,
+      "business": 3,
+      "arts": 1,
+      "sciences": 5,
+      "helping_others": 3
+    },
+    "jobs": [
+      {
+        "title": "Data Scientist",
+        "skills": ["programming", "data analysis", "problem solving", "communication"],
+        "keywords": ["Python", "R", "SQL", "machine learning", "statistical analysis", "data visualization", "predictive modeling", "NLP", "big data", "neural networks"]
+      },
+      {
+        "title": "Machine Learning Engineer",
+        "skills": ["programming", "data analysis", "problem solving"],
+        "keywords": ["Python", "TensorFlow", "PyTorch", "deep learning", "neural networks", "algorithms", "model deployment", "feature engineering", "data pipelines", "cloud platforms"]
+      },
+      {
+        "title": "Data Analyst",
+        "skills": ["data analysis", "communication", "problem solving"],
+        "keywords": ["SQL", "Excel", "Tableau", "Power BI", "data visualization", "reporting", "dashboards", "statistical analysis", "ETL", "business intelligence"]
+      }
+    ]
+  },
+  {
+    "path": "UX/UI Design",
+    "technical_skills": {
+      "programming": 2,
+      "data_analysis": 2,
+      "design": 5,
+      "writing": 3,
+      "project_management": 3
+    },
+    "soft_skills": {
+      "communication": 4,
+      "teamwork": 4,
+      "leadership": 2,
+      "problem_solving": 4,
+      "adaptability": 3
+    },
+    "interests": {
+      "technology": 3,
+      "business": 2,
+      "arts": 5,
+      "sciences": 1,
+      "helping_others": 4
+    },
+    "jobs": [
+      {
+        "title": "UX Designer",
+        "skills": ["design", "communication", "problem solving", "teamwork"],
+        "keywords": ["user research", "usability testing", "wireframing", "prototyping", "user flows", "information architecture", "Figma", "Sketch", "empathy", "design thinking"]
+      },
+      {
+        "title": "UI Designer",
+        "skills": ["design", "communication", "teamwork"],
+        "keywords": ["visual design", "typography", "color theory", "Figma", "Sketch", "Adobe XD", "interaction design", "style guides", "design systems", "responsive design"]
+      },
+      {
+        "title": "Product Designer",
+        "skills": ["design", "communication", "problem solving", "project management"],
+        "keywords": ["user experience", "user interface", "prototyping", "wireframing", "design thinking", "product strategy", "usability", "design systems", "Figma", "Sketch"]
+      }
+    ]
+  },
+  {
+    "path": "Project Management",
+    "technical_skills": {
+      "programming": 1,
+      "data_analysis": 3,
+      "design": 1,
+      "writing": 4,
+      "project_management": 5
+    },
+    "soft_skills": {
+      "communication": 5,
+      "teamwork": 5,
+      "leadership": 5,
+      "problem_solving": 4,
+      "adaptability": 4
+    },
+    "interests": {
+      "technology": 3,
+      "business": 5,
+      "arts": 1,
+      "sciences": 2,
+      "helping_others": 3
+    },
+    "jobs": [
+      {
+        "title": "Project Manager",
+        "skills": ["project management", "communication", "leadership", "teamwork"],
+        "keywords": ["agile", "scrum", "waterfall", "risk management", "stakeholder management", "scheduling", "budgeting", "resource allocation", "PMP", "JIRA"]
+      },
+      {
+        "title": "Product Manager",
+        "skills": ["project management", "communication", "leadership", "problem solving"],
+        "keywords": ["product strategy", "roadmapping", "user stories", "market research", "competitive analysis", "agile", "scrum", "user feedback", "KPIs", "product lifecycle"]
+      },
+      {
+        "title": "Program Manager",
+        "skills": ["project management", "leadership", "communication", "problem solving"],
+        "keywords": ["program planning", "strategic alignment", "governance", "risk management", "dependency management", "portfolio management", "stakeholder communication", "reporting", "resource optimization", "leadership"]
+      }
+    ]
+  },
+  {
+    "path": "Digital Marketing",
+    "technical_skills": {
+      "programming": 1,
+      "data_analysis": 4,
+      "design": 3,
+      "writing": 5,
+      "project_management": 3
+    },
+    "soft_skills": {
+      "communication": 5,
+      "teamwork": 4,
+      "leadership": 3,
+      "problem_solving": 3,
+      "adaptability": 4
+    },
+    "interests": {
+      "technology": 3,
+      "business": 5,
+      "arts": 3,
+      "sciences": 1,
+      "helping_others": 2
+    },
+    "jobs": [
+      {
+        "title": "Digital Marketing Specialist",
+        "skills": ["writing", "data analysis", "communication", "design"],
+        "keywords": ["SEO", "SEM", "social media", "content marketing", "analytics", "email marketing", "Google Ads", "Facebook Ads", "Google Analytics", "conversion optimization"]
+      },
+      {
+        "title": "Content Strategist",
+        "skills": ["writing", "communication", "project management"],
+        "keywords": ["content planning", "editorial calendar", "audience research", "SEO", "content types", "style guides", "content governance", "content audits", "storytelling", "brand messaging"]
+      },
+      {
+        "title": "Social Media Manager",
+        "skills": ["writing", "communication", "design", "data analysis"],
+        "keywords": ["community management", "content creation", "social media platforms", "analytics", "engagement strategies", "paid social", "audience growth", "influencer marketing", "social listening", "brand voice"]
+      }
+    ]
+  },
+  {
+    "path": "IT Support & Infrastructure",
+    "technical_skills": {
+      "programming": 3,
+      "data_analysis": 2,
+      "design": 1,
+      "writing": 2,
+      "project_management": 3
+    },
+    "soft_skills": {
+      "communication": 4,
+      "teamwork": 4,
+      "leadership": 2,
+      "problem_solving": 5,
+      "adaptability": 4
+    },
+    "interests": {
+      "technology": 5,
+      "business": 2,
+      "arts": 1,
+      "sciences": 3,
+      "helping_others": 4
+    },
+    "jobs": [
+      {
+        "title": "IT Support Specialist",
+        "skills": ["problem solving", "communication", "teamwork"],
+        "keywords": ["troubleshooting", "hardware", "software", "Windows", "macOS", "networking", "ticketing systems", "customer service", "remote support", "documentation"]
+      },
+      {
+        "title": "System Administrator",
+        "skills": ["problem solving", "programming", "project management"],
+        "keywords": ["Windows Server", "Linux", "Active Directory", "virtualization", "cloud services", "security", "networking", "monitoring", "backup solutions", "automation"]
+      },
+      {
+        "title": "Network Engineer",
+        "skills": ["problem solving", "programming", "project management"],
+        "keywords": ["routing", "switching", "firewalls", "VPN", "TCP/IP", "VLAN", "WAN", "LAN", "Cisco", "network security"]
+      }
+    ]
+  }
+]

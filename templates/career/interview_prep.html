@@ -1,0 +1,969 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Interview Preparation - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+    .question-card:hover {
+        border-left-color: var(--bs-primary);
+    }
+    .question-card.active {
+        border-left-color: var(--bs-primary);
+        background-color: rgba(13, 110, 253, 0.05);
+    }
+    .session-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .session-card:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+    .session-card.active {
+        border-color: var(--bs-primary) !important;
+    }
+    .tips-list li {
+        margin-bottom: 1rem;
+    }
+    .interview-question-container {
+        min-height: 100px;
+        background-color: rgba(0, 0, 0, 0.03);
+        color: black ;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Interview Preparation</h2>
+            <p class="text-muted">
+                Prepare for your next interview with customized questions and suggested answers. 
+                Our AI helps you anticipate what employers might ask and how to respond effectively.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Create New Interview Prep Session -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h4 class="mb-3">Generate Interview Questions</h4>
+            <p class="text-muted mb-3">
+                Enter the job title you're interviewing for and optionally the company name 
+                to get personalized interview questions and preparation tips.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form.job_title|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form.company_name|as_crispy_field }}
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-lightbulb me-1"></i> Generate Questions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if previous_sessions %}
+    <!-- Interview Preparation Content -->
+    <div class="row">
+        <!-- Previous Sessions Sidebar -->
+        <div class="col-md-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Your Interview Prep Sessions</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for session in previous_sessions %}
+                        <a href="{% url 'interview_prep' %}?session_id={{ session.id }}" class="list-group-item list-group-item-action session-card {% if current_session.id == session.id %}active{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ session.job_title }}</h6>
+                                <small>{{ session.created_at|date:"M d" }}</small>
+                            </div>
+                            <small class="text-muted">
+                                {% if session.company_research %}
+                                {{ session.company_name }}
+                                {% else %}
+                                General interview
+                                {% endif %}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Session Content -->
+        <div class="col-md-8">
+            {% if current_session %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ current_session.job_title }} Interview Prep</h4>
+                    <span class="badge bg-secondary">{{ current_session.created_at|date:"F j, Y" }}</span>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Question Tabs -->
+                    <ul class="nav nav-tabs mb-4" id="questionsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button" role="tab">
+                                <i class="fas fa-question-circle me-1"></i> Common Questions
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="answers-tab" data-bs-toggle="tab" data-bs-target="#answers" type="button" role="tab">
+                                <i class="fas fa-comment me-1"></i> Suggested Answers
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tips-tab" data-bs-toggle="tab" data-bs-target="#tips" type="button" role="tab">
+                                <i class="fas fa-lightbulb me-1"></i> Preparation Tips
+                            </button>
+                        </li>
+                        {% if current_session.company_research %}
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="company-tab" data-bs-toggle="tab" data-bs-target="#company" type="button" role="tab">
+                                <i class="fas fa-building me-1"></i> Company Research
+                            </button>
+                        </li>
+                        {% endif %}
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="questionsTabContent">
+                        <!-- Questions Tab -->
+                        <div class="tab-pane fade show active" id="questions" role="tabpanel">
+                            <h5 class="mb-3">Likely Interview Questions</h5>
+                            <div class="mb-3">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="questionSearch" placeholder="Search questions...">
+                                </div>
+                            </div>
+
+                            <div id="questionsList">
+                                {% for question in current_session.common_questions %}
+                                <div class="card question-card mb-3" data-question="{{ question }}">
+                                    <div class="card-body">
+                                        <h6 class="mb-0">{{ question }}</h6>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Answers Tab -->
+                        <div class="tab-pane fade" id="answers" role="tabpanel">
+                            <h5 class="mb-3">Suggested Answers</h5>
+                            <p class="text-muted mb-4">
+                                These are suggested starting points. Personalize them with your own experiences and achievements.
+                            </p>
+
+                            {% for question, answer in current_session.suggested_answers.items %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-transparent">
+                                    <h6 class="mb-0">{{ question }}</h6>
+                                </div>
+                                <div class="card-body">
+                                    <p class="mb-0">{{ answer }}</p>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                No suggested answers available for this session.
+                            </div>
+                            {% endfor %}
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Important:</strong> These are AI-generated suggestions. Always personalize your answers with your unique experiences and accomplishments.
+                            </div>
+                        </div>
+
+                        <!-- Tips Tab -->
+                        <div class="tab-pane fade" id="tips" role="tabpanel">
+                            <h5 class="mb-3">Interview Preparation Tips</h5>
+
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <pre class="mb-0">{{ current_session.preparation_tips }}</pre>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3">STAR Method for Behavioral Questions</h5>
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <p class="mb-3">When answering behavioral questions, use the STAR method:</p>
+                                    <ul class="tips-list">
+                                        <li><strong>Situation:</strong> Describe the context or situation you were in.</li>
+                                        <li><strong>Task:</strong> Explain what your responsibility was in that situation.</li>
+                                        <li><strong>Action:</strong> Detail the specific actions you took to address the situation.</li>
+                                        <li><strong>Result:</strong> Share the outcomes of your actions, preferably with measurable results.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Company Research Tab -->
+                        {% if current_session.company_research %}
+                        <div class="tab-pane fade" id="company" role="tabpanel">
+                            <h5 class="mb-3">Company Research Guide</h5>
+
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <pre class="mb-0">{{ current_session.company_research }}</pre>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Pro Tip:</strong> At the end of most interviews, you'll have the opportunity to ask questions. Prepare 3-5 thoughtful questions about the company, team, or role to demonstrate your interest and research.
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Practice Tools -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Practice Tools</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-video fa-3x mb-3 text-primary"></i>
+                                    <h5>Self-Recording</h5>
+                                    <p class="text-muted">Record yourself answering questions to review your responses.</p>
+                                    <button type="button" class="btn btn-outline-primary" id="start-recording">
+                                        <i class="fas fa-microphone me-1"></i> Start Recording
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-friends fa-3x mb-3 text-primary"></i>
+                                    <h5>Mock Interview</h5>
+                                    <p class="text-muted">Practice with a simulated interview experience.</p>
+                                    <button type="button" class="btn btn-outline-primary" id="start-mock-interview">
+                                        <i class="fas fa-play me-1"></i> Start Practice
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Select a session from the sidebar or generate a new interview preparation guide.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <!-- No Sessions Yet -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-comments fa-4x mb-3 text-muted"></i>
+            <h4>No Interview Prep Sessions Yet</h4>
+            <p class="text-muted">
+                Generate your first interview preparation guide by filling out the form above.
+                You'll receive customized questions, suggested answers, and preparation tips.
+            </p>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Question search functionality
+        const searchInput = document.getElementById('questionSearch');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const questionCards = document.querySelectorAll('.question-card');
+
+                questionCards.forEach(card => {
+                    const questionText = card.getAttribute('data-question').toLowerCase();
+                    if (questionText.includes(searchTerm)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Make questions clickable to preview
+        const questionCards = document.querySelectorAll('.question-card');
+        questionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove active class from all cards
+                questionCards.forEach(c => c.classList.remove('active'));
+
+                // Add active class to clicked card
+                this.classList.add('active');
+
+                // Get the question text
+                const question = this.getAttribute('data-question');
+
+                // Switch to answers tab if we have a suggested answer
+                const suggestedAnswers = {% if current_session %}{{ current_session.suggested_answers|safe }}{% else %}{}{% endif %};
+                if (suggestedAnswers[question]) {
+                    document.getElementById('answers-tab').click();
+                }
+            });
+        });
+
+        // Self-Recording Tool
+        const startRecordingBtn = document.getElementById('start-recording');
+        if (startRecordingBtn) {
+            startRecordingBtn.addEventListener('click', function() {
+                // Create modal for recording interface
+                const modalHtml = `
+                    <div class="modal fade" id="recordingModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Self-Recording Practice</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="text-center mb-3" id="recording-status">
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Select a question below to begin practicing your response.
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-5">
+                                            <div class="card mb-3">
+                                                <div class="card-header bg-primary text-white">
+                                                    <h6 class="mb-0">Interview Questions</h6>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <div class="list-group list-group-flush" id="recording-questions">
+                                                        <!-- Questions will be populated here -->
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-7">
+                                            <div class="card">
+                                                <div class="card-header bg-transparent">
+                                                    <h6 class="mb-0">Recording Controls</h6>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="text-center" id="recording-controls">
+                                                        <div class="mb-3" id="selected-question-display">
+                                                            <strong>No question selected</strong>
+                                                        </div>
+                                                        <button type="button" class="btn btn-danger mb-3" id="record-btn" disabled>
+                                                            <i class="fas fa-microphone me-1"></i> Start Recording
+                                                        </button>
+                                                        <div id="recording-timer" class="mb-3 d-none">
+                                                            <div class="h3" id="timer-display">00:00</div>
+                                                        </div>
+                                                        <div id="recordings-list" class="text-start mt-3">
+                                                            <!-- Recordings will appear here -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add modal to the page
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
+
+                // Show the modal
+                const recordingModal = new bootstrap.Modal(document.getElementById('recordingModal'));
+                recordingModal.show();
+
+                // Populate questions
+                const questionsContainer = document.getElementById('recording-questions');
+                questionCards.forEach((card, index) => {
+                    const question = card.getAttribute('data-question');
+                    const questionElement = document.createElement('button');
+                    questionElement.className = 'list-group-item list-group-item-action';
+                    questionElement.textContent = question;
+                    questionElement.addEventListener('click', function() {
+                        // Highlight selected question
+                        document.querySelectorAll('#recording-questions .list-group-item').forEach(item => {
+                            item.classList.remove('active');
+                        });
+                        this.classList.add('active');
+
+                        // Display selected question
+                        document.getElementById('selected-question-display').innerHTML = `<strong>${question}</strong>`;
+
+                        // Enable record button
+                        document.getElementById('record-btn').disabled = false;
+                    });
+                    questionsContainer.appendChild(questionElement);
+                });
+
+                // Recording functionality
+                let mediaRecorder;
+                let recordingChunks = [];
+                let timerInterval;
+                let startTime;
+
+                // Handle record button click
+                const recordBtn = document.getElementById('record-btn');
+                recordBtn.addEventListener('click', function() {
+                    if (this.textContent.includes('Start')) {
+                        // Request microphone access
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(stream => {
+                                // Update UI
+                                this.innerHTML = '<i class="fas fa-stop-circle me-1"></i> Stop Recording';
+                                this.classList.remove('btn-danger');
+                                this.classList.add('btn-warning');
+
+                                // Show timer
+                                document.getElementById('recording-timer').classList.remove('d-none');
+                                startTime = Date.now();
+                                timerInterval = setInterval(updateTimer, 1000);
+
+                                // Start recording
+                                mediaRecorder = new MediaRecorder(stream);
+                                mediaRecorder.start();
+
+                                // Collect data
+                                mediaRecorder.ondataavailable = e => {
+                                    recordingChunks.push(e.data);
+                                };
+
+                                // When recording stops
+                                mediaRecorder.onstop = () => {
+                                    // Create recording blob
+                                    const recordingBlob = new Blob(recordingChunks, { type: 'audio/webm' });
+                                    const recordingUrl = URL.createObjectURL(recordingBlob);
+
+                                    // Create recording item
+                                    const recordingItem = document.createElement('div');
+                                    recordingItem.className = 'card mb-2';
+
+                                    const selectedQuestion = document.querySelector('#recording-questions .active').textContent;
+                                    const currentDate = new Date().toLocaleTimeString();
+
+                                    recordingItem.innerHTML = `
+                                        <div class="card-body py-2">
+                                            <h6 class="mb-1">${selectedQuestion}</h6>
+                                            <p class="text-muted small mb-2">Recorded at ${currentDate}</p>
+                                            <audio controls class="w-100">
+                                                <source src="${recordingUrl}" type="audio/webm">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    `;
+
+                                    // Add to list
+                                    document.getElementById('recordings-list').appendChild(recordingItem);
+
+                                    // Reset for next recording
+                                    recordingChunks = [];
+                                    clearInterval(timerInterval);
+                                    document.getElementById('recording-timer').classList.add('d-none');
+                                    document.getElementById('timer-display').textContent = '00:00';
+                                };
+                            })
+                            .catch(error => {
+                                // Show error message
+                                const statusEl = document.getElementById('recording-status');
+                                statusEl.innerHTML = `
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        Could not access microphone. Please check permissions and try again.
+                                    </div>
+                                `;
+                            });
+                    } else {
+                        // Stop recording
+                        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                            mediaRecorder.stop();
+                            mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                        }
+
+                        // Update UI
+                        this.innerHTML = '<i class="fas fa-microphone me-1"></i> Start Recording';
+                        this.classList.remove('btn-warning');
+                        this.classList.add('btn-danger');
+                    }
+                });
+
+                // Timer function
+                function updateTimer() {
+                    const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                    const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+                    const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+                    document.getElementById('timer-display').textContent = `${minutes}:${seconds}`;
+                }
+
+                // Cleanup on modal close
+                document.getElementById('recordingModal').addEventListener('hidden.bs.modal', function() {
+                    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                        mediaRecorder.stop();
+                        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                    }
+                    clearInterval(timerInterval);
+                    this.remove();
+                });
+            });
+        }
+
+        // Mock Interview Tool
+        const startMockInterviewBtn = document.getElementById('start-mock-interview');
+        if (startMockInterviewBtn) {
+            startMockInterviewBtn.addEventListener('click', function() {
+                // Create modal for mock interview
+                const modalHtml = `
+                    <div class="modal fade" id="mockInterviewModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Mock Interview Practice</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="interview-container">
+                                        <!-- Interview setup screen -->
+                                        <div id="interview-setup">
+                                            <div class="text-center mb-4">
+                                                <i class="fas fa-user-friends fa-4x text-primary mb-3"></i>
+                                                <h4>Mock Interview Setup</h4>
+                                                <p class="text-muted">Configure your practice interview session</p>
+                                            </div>
+
+                                            <div class="card mb-4">
+                                                <div class="card-body">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Interview Duration</label>
+                                                        <select class="form-select" id="interview-duration">
+                                                            <option value="5">5 minutes (Quick Practice)</option>
+                                                            <option value="10" selected>10 minutes (Standard)</option>
+                                                            <option value="20">20 minutes (Extended)</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Difficulty Level</label>
+                                                        <select class="form-select" id="interview-difficulty">
+                                                            <option value="easy">Easy (Basic Questions)</option>
+                                                            <option value="medium" selected>Medium (Standard Questions)</option>
+                                                            <option value="hard">Hard (Challenging Questions)</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="form-check mb-3">
+                                                        <input class="form-check-input" type="checkbox" id="use-camera" checked>
+                                                        <label class="form-check-label" for="use-camera">
+                                                            Enable camera (for better practice)
+                                                        </label>
+                                                    </div>
+
+                                                    <div class="d-grid">
+                                                        <button type="button" class="btn btn-primary" id="start-session-btn">
+                                                            <i class="fas fa-play-circle me-1"></i> Start Interview Session
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-info-circle me-2"></i>
+                                                <strong>How it works:</strong> You'll be asked questions from your current interview prep session. Take your time to answer each question verbally as if you were in a real interview.
+                                            </div>
+                                        </div>
+
+                                        <!-- Active interview screen (hidden initially) -->
+                                        <div id="active-interview" class="d-none">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <!-- Interviewer and question area -->
+                                                    <div class="card mb-3">
+                                                        <div class="card-body">
+                                                            <div class="d-flex align-items-center mb-3">
+                                                                <div class="avatar-circle me-3">
+                                                                    <i class="fas fa-user-tie fa-2x"></i>
+                                                                </div>
+                                                                <div>
+                                                                    <h5 class="mb-0">Virtual Interviewer</h5>
+                                                                    <p class="text-muted small mb-0">Technical Interview</p>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="interview-question-container p-3 mb-3 bg-light rounded">
+                                                                <p class="mb-0" id="current-question">Loading question...</p>
+                                                            </div>
+
+                                                            <div class="text-end">
+                                                                <button type="button" class="btn btn-primary" id="next-question-btn">
+                                                                    Next Question <i class="fas fa-arrow-right ms-1"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <!-- Timer and controls -->
+                                                    <div class="card mb-3">
+                                                        <div class="card-header bg-transparent">
+                                                            <h6 class="mb-0">Session Info</h6>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="text-center mb-3">
+                                                                <div class="h3" id="interview-timer">00:00</div>
+                                                                <p class="text-muted small">Remaining Time</p>
+                                                            </div>
+
+                                                            <div class="progress mb-3">
+                                                                <div class="progress-bar" id="question-progress" role="progressbar" style="width: 0%"></div>
+                                                            </div>
+
+                                                            <div class="text-center">
+                                                                <span id="question-counter">Question 0 of 0</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Camera preview (if enabled) -->
+                                                    <div class="card" id="camera-container">
+                                                        <div class="card-header bg-transparent">
+                                                            <h6 class="mb-0">Camera Preview</h6>
+                                                        </div>
+                                                        <div class="card-body p-0">
+                                                            <video id="camera-preview" class="w-100" autoplay muted></video>
+                                                            <div id="camera-placeholder" class="text-center py-5 bg-dark text-white d-none">
+                                                                <i class="fas fa-video-slash fa-2x mb-2"></i>
+                                                                <p class="mb-0">Camera disabled</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Results screen (hidden initially) -->
+                                        <div id="interview-results" class="d-none">
+                                            <div class="text-center mb-4">
+                                                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                                                <h4>Interview Session Complete</h4>
+                                                <p class="text-muted">Great job! Here's a summary of your practice session.</p>
+                                            </div>
+
+                                            <div class="card mb-4">
+                                                <div class="card-header bg-transparent">
+                                                    <h5 class="mb-0">Session Summary</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row text-center">
+                                                        <div class="col-md-4 mb-3">
+                                                            <h5 id="summary-questions">0</h5>
+                                                            <p class="text-muted">Questions Covered</p>
+                                                        </div>
+                                                        <div class="col-md-4 mb-3">
+                                                            <h5 id="summary-duration">0 min</h5>
+                                                            <p class="text-muted">Total Duration</p>
+                                                        </div>
+                                                        <div class="col-md-4 mb-3">
+                                                            <h5 id="summary-difficulty">Medium</h5>
+                                                            <p class="text-muted">Difficulty Level</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="card mb-4">
+                                                <div class="card-header bg-transparent">
+                                                    <h5 class="mb-0">Questions Covered</h5>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <ul class="list-group list-group-flush" id="questions-summary">
+                                                        <!-- Will be populated with questions -->
+                                                    </ul>
+                                                </div>
+                                            </div>
+
+                                            <div class="alert alert-info">
+                                                <i class="fas fa-lightbulb me-2"></i>
+                                                <strong>Pro Tip:</strong> Review the suggested answers for these questions to compare with your responses and improve your interview performance.
+                                            </div>
+
+                                            <div class="text-center">
+                                                <button type="button" class="btn btn-primary" id="new-session-btn">
+                                                    <i class="fas fa-redo me-1"></i> Start New Session
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add modal to the page
+                const modalContainer = document.createElement('div');
+                modalContainer.innerHTML = modalHtml;
+                document.body.appendChild(modalContainer);
+
+                // Add some custom styles
+                const styleElement = document.createElement('style');
+                styleElement.textContent = `
+                    .avatar-circle {
+                        width: 50px;
+                        height: 50px;
+                        background-color: #e9ecef;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    .interview-question-container {
+                        min-height: 100px;
+                    }
+                    #camera-preview {
+                        height: 180px;
+                        background-color: #343a40;
+                        object-fit: cover;
+                    }
+                `;
+                document.head.appendChild(styleElement);
+
+                // Show the modal
+                const mockInterviewModal = new bootstrap.Modal(document.getElementById('mockInterviewModal'));
+                mockInterviewModal.show();
+
+                // Get questions from current session
+                let interviewQuestions = [];
+                const questionCards = document.querySelectorAll('.question-card');
+                questionCards.forEach(card => {
+                    interviewQuestions.push(card.getAttribute('data-question'));
+                });
+
+                // Default questions if none available
+                if (interviewQuestions.length === 0) {
+                    interviewQuestions = [
+                        "Tell me about yourself and your experience.",
+                        "What are your greatest strengths and weaknesses?",
+                        "Why do you want to work for this company?",
+                        "Where do you see yourself in 5 years?",
+                        "Describe a challenge you faced at work and how you overcame it."
+                    ];
+                }
+
+                // Shuffle questions
+                interviewQuestions.sort(() => 0.5 - Math.random());
+
+                let currentQuestionIndex = 0;
+                let totalQuestions = 0;
+                let interviewDuration = 0;
+                let remainingTime = 0;
+                let interviewTimer;
+                let cameraStream = null;
+
+                // Start session button
+                document.getElementById('start-session-btn').addEventListener('click', function() {
+                    // Get settings
+                    interviewDuration = parseInt(document.getElementById('interview-duration').value);
+                    remainingTime = interviewDuration * 60;
+                    const difficulty = document.getElementById('interview-difficulty').value;
+                    const useCamera = document.getElementById('use-camera').checked;
+
+                    // Adjust number of questions based on duration and difficulty
+                    switch (difficulty) {
+                        case 'easy':
+                            totalQuestions = Math.max(3, Math.floor(interviewDuration / 3));
+                            break;
+                        case 'hard':
+                            totalQuestions = Math.max(5, Math.floor(interviewDuration / 2));
+                            break;
+                        default: // medium
+                            totalQuestions = Math.max(4, Math.floor(interviewDuration / 2.5));
+                    }
+
+                    // Limit to available questions
+                    totalQuestions = Math.min(totalQuestions, interviewQuestions.length);
+
+                    // Update UI
+                    document.getElementById('interview-setup').classList.add('d-none');
+                    document.getElementById('active-interview').classList.remove('d-none');
+
+                    // Set up camera if enabled
+                    if (useCamera) {
+                        navigator.mediaDevices.getUserMedia({ video: true })
+                            .then(stream => {
+                                cameraStream = stream;
+                                const videoElement = document.getElementById('camera-preview');
+                                videoElement.srcObject = stream;
+                            })
+                            .catch(err => {
+                                document.getElementById('camera-preview').classList.add('d-none');
+                                document.getElementById('camera-placeholder').classList.remove('d-none');
+                            });
+                    } else {
+                        document.getElementById('camera-preview').classList.add('d-none');
+                        document.getElementById('camera-placeholder').classList.remove('d-none');
+                    }
+
+                    // Start interview
+                    showQuestion();
+                    startTimer();
+                });
+
+                // Next question button
+                document.getElementById('next-question-btn').addEventListener('click', function() {
+                    currentQuestionIndex++;
+
+                    if (currentQuestionIndex < totalQuestions) {
+                        showQuestion();
+                    } else {
+                        endInterview();
+                    }
+                });
+
+                // New session button
+                document.getElementById('new-session-btn').addEventListener('click', function() {
+                    // Reset interface
+                    document.getElementById('interview-results').classList.add('d-none');
+                    document.getElementById('interview-setup').classList.remove('d-none');
+
+                    // Reset variables
+                    currentQuestionIndex = 0;
+
+                    // Reshuffle questions
+                    interviewQuestions.sort(() => 0.5 - Math.random());
+                });
+
+                // Show current question
+                function showQuestion() {
+                    const questionElement = document.getElementById('current-question');
+                    questionElement.textContent = interviewQuestions[currentQuestionIndex];
+
+                    // Update progress
+                    document.getElementById('question-counter').textContent = `Question ${currentQuestionIndex + 1} of ${totalQuestions}`;
+                    const progressPercent = ((currentQuestionIndex) / totalQuestions) * 100;
+                    document.getElementById('question-progress').style.width = progressPercent + '%';
+                }
+
+                // Start timer
+                function startTimer() {
+                    updateTimerDisplay();
+
+                    interviewTimer = setInterval(() => {
+                        remainingTime--;
+
+                        if (remainingTime <= 0) {
+                            endInterview();
+                        } else {
+                            updateTimerDisplay();
+                        }
+                    }, 1000);
+                }
+
+                // Update timer display
+                function updateTimerDisplay() {
+                    const minutes = Math.floor(remainingTime / 60).toString().padStart(2, '0');
+                    const seconds = (remainingTime % 60).toString().padStart(2, '0');
+                    document.getElementById('interview-timer').textContent = `${minutes}:${seconds}`;
+                }
+
+                // End interview
+                function endInterview() {
+                    // Stop timer
+                    clearInterval(interviewTimer);
+
+                    // Stop camera if enabled
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(track => track.stop());
+                    }
+
+                    // Update UI
+                    document.getElementById('active-interview').classList.add('d-none');
+                    document.getElementById('interview-results').classList.remove('d-none');
+
+                    // Update summary
+                    document.getElementById('summary-questions').textContent = currentQuestionIndex;
+                    document.getElementById('summary-duration').textContent = interviewDuration + ' min';
+                    document.getElementById('summary-difficulty').textContent = document.getElementById('interview-difficulty').options[
+                        document.getElementById('interview-difficulty').selectedIndex
+                    ].text.split(' ')[0];
+
+                    // Populate questions summary
+                    const questionsContainer = document.getElementById('questions-summary');
+                    questionsContainer.innerHTML = '';
+
+                    for (let i = 0; i < currentQuestionIndex; i++) {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'list-group-item';
+                        listItem.innerHTML = `
+                            <div class="d-flex">
+                                <div class="me-2"><i class="fas fa-check-circle text-success"></i></div>
+                                <div>${interviewQuestions[i]}</div>
+                            </div>
+                        `;
+                        questionsContainer.appendChild(listItem);
+                    }
+                }
+
+                // Cleanup on modal close
+                document.getElementById('mockInterviewModal').addEventListener('hidden.bs.modal', function() {
+                    clearInterval(interviewTimer);
+
+                    if (cameraStream) {
+                        cameraStream.getTracks().forEach(track => track.stop());
+                    }
+
+                    this.remove();
+                    styleElement.remove();
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

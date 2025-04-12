@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Network Analysis - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<style>
+    #network-visualization {
+        height: 600px;
+        background-color: #1a1d20;
+        border-radius: 0.5rem;
+    }
+    .legend-item {
+        display: inline-flex;
+        align-items: center;
+        margin-right: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .legend-color {
+        width: 1rem;
+        height: 1rem;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+    }
+    .node-info {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: rgba(33, 37, 41, 0.8);
+        position: absolute;
+        display: none;
+        pointer-events: none;
+        z-index: 100;
+        max-width: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Career Network Analysis</h2>
+            <p class="text-muted">
+                Visualize connections between your skills, interests, and potential career paths.
+                This interactive diagram helps you understand how different elements of your profile relate to career opportunities.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    {% if not network_data %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-4 text-center">
+            <i class="fas fa-project-diagram fa-4x mb-3 text-muted"></i>
+            <h4>No Network Data Available</h4>
+            <p class="text-muted mb-4">
+                Complete a skills assessment and explore career paths first to generate your network visualization.
+                This feature helps you see connections between your skills and career opportunities.
+            </p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="{% url 'skills_assessment' %}" class="btn btn-primary">
+                    <i class="fas fa-brain me-1"></i> Take Skills Assessment
+                </a>
+                <a href="{% url 'career_paths' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-route me-1"></i> Explore Career Paths
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Network Visualization Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h4 class="mb-0">Career Network Visualization</h4>
+                </div>
+                <div class="card-body p-0 position-relative">
+                    <div id="network-visualization"></div>
+                    <div id="node-info" class="node-info"></div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex flex-wrap my-2">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #0d6efd;"></div>
+                            <span>Primary Career Path</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #6c757d;"></div>
+                            <span>Required Skills</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #6f42c1;"></div>
+                            <span>Alternative Paths</span>
+                        </div>
+                    </div>
+                    <div class="small text-muted">
+                        <i class="fas fa-info-circle me-1"></i> 
+                        Hover over nodes to see details. Drag nodes to rearrange the network.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Visualization Controls -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Visualization Controls</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label">Network Layout</label>
+                        <select class="form-select" id="layout-select">
+                            <option value="force" selected>Force-Directed</option>
+                            <option value="radial">Radial</option>
+                            <option value="circle">Circular</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Link Strength</label>
+                        <input type="range" class="form-range" min="1" max="10" value="5" id="link-strength">
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-primary" id="recenter-btn">
+                            <i class="fas fa-compress-arrows-alt me-1"></i> Recenter Visualization
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interpretation Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent">
+                    <h5 class="mb-0">Network Interpretation</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p>This visualization shows relationships between your recommended career path, required skills, and alternative paths.</p>
+                    
+                    <h6 class="mb-2">Primary Path: {{ career_path.primary_path }}</h6>
+                    <p class="small text-muted mb-3">
+                        The central node represents your primary recommended career path based on your skills assessment.
+                    </p>
+                    
+                    <h6 class="mb-2">Node Connections</h6>
+                    <ul class="small">
+                        <li class="mb-2">Stronger connections indicate higher relevance between skills and career paths.</li>
+                        <li class="mb-2">Skills connected to multiple paths represent transferable skills valuable across different careers.</li>
+                        <li class="mb-2">Alternative paths show other potential directions that align with your skills profile.</li>
+                    </ul>
+                    
+                    <div class="alert alert-info small mb-0">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        <strong>Insight:</strong> Focus on developing the skills that connect to multiple career paths to maximize your career flexibility.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="{% static 'js/network_visualization.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if network_data %}
+        // Initialize the network visualization
+        const networkData = {{ network_data|safe }};
+        initNetworkVisualization('network-visualization', 'node-info', networkData);
+        
+        // Event listeners for controls
+        document.getElementById('layout-select').addEventListener('change', function() {
+            changeLayout(this.value);
+        });
+        
+        document.getElementById('link-strength').addEventListener('input', function() {
+            updateLinkStrength(this.value / 10);
+        });
+        
+        document.getElementById('recenter-btn').addEventListener('click', function() {
+            recenterVisualization();
+        });
+        {% endif %}
+    });
+</script>
+{% endblock %}

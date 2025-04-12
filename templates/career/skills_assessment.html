@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Skills Assessment - Career Advisor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .skill-rating {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .skill-rating .form-check {
+        margin-right: 1rem;
+    }
+    .skill-category {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+    }
+    .question-counter {
+        font-size: 0.9rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        background-color: var(--bs-secondary-bg);
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Skills Assessment</h2>
+            <p class="text-muted">
+                Rate your abilities in various skills to receive personalized career recommendations. 
+                This assessment helps us understand your strengths and interests to guide your career journey.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    {% if existing_assessment %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex">
+            <div class="me-3">
+                <i class="fas fa-info-circle fa-2x"></i>
+            </div>
+            <div>
+                <h5 class="alert-heading">Previous Assessment Found</h5>
+                <p class="mb-0">You have already completed an assessment on {{ existing_assessment.completed_at|date:"F j, Y" }}. You can review and update your answers below.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Assessment Form -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <form method="POST" id="skillsAssessmentForm">
+                {% csrf_token %}
+                
+                <!-- Progress Bar -->
+                <div class="progress mb-4" style="height: 8px;">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" id="assessmentProgress"></div>
+                </div>
+                
+                <!-- Technical Skills Section -->
+                <div class="skill-category" id="technical-skills-section">
+                    <h4 class="mb-4">Technical Skills <span class="question-counter">1-5 of 15</span></h4>
+                    <p class="text-muted mb-4">Rate your proficiency level in each technical skill from 1 (Beginner) to 5 (Expert)</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Programming and coding skills</label>
+                        <div class="skill-rating">
+                            {{ form.programming }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Data analysis and interpretation</label>
+                        <div class="skill-rating">
+                            {{ form.data_analysis }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Design and visual creativity</label>
+                        <div class="skill-rating">
+                            {{ form.design }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Writing and communication</label>
+                        <div class="skill-rating">
+                            {{ form.writing }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Project management</label>
+                        <div class="skill-rating">
+                            {{ form.project_management }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-primary next-section">Continue to Soft Skills</button>
+                    </div>
+                </div>
+                
+                <!-- Soft Skills Section -->
+                <div class="skill-category d-none" id="soft-skills-section">
+                    <h4 class="mb-4">Soft Skills <span class="question-counter">6-10 of 15</span></h4>
+                    <p class="text-muted mb-4">Rate your proficiency level in each soft skill from 1 (Beginner) to 5 (Expert)</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Verbal and written communication</label>
+                        <div class="skill-rating">
+                            {{ form.communication }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Teamwork and collaboration</label>
+                        <div class="skill-rating">
+                            {{ form.teamwork }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Leadership and decision making</label>
+                        <div class="skill-rating">
+                            {{ form.leadership }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Problem solving and critical thinking</label>
+                        <div class="skill-rating">
+                            {{ form.problem_solving }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Adaptability and learning</label>
+                        <div class="skill-rating">
+                            {{ form.adaptability }}
+                        </div>
+                        <div class="form-text">
+                            <span>Beginner</span>
+                            <span class="float-end">Expert</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-section">Back to Technical Skills</button>
+                        <button type="button" class="btn btn-primary next-section">Continue to Interests</button>
+                    </div>
+                </div>
+                
+                <!-- Interests Section -->
+                <div class="skill-category d-none" id="interests-section">
+                    <h4 class="mb-4">Career Interests <span class="question-counter">11-15 of 15</span></h4>
+                    <p class="text-muted mb-4">Rate your interest level in each area from 1 (Not Interested) to 5 (Very Interested)</p>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Technology and innovation</label>
+                        <div class="skill-rating">
+                            {{ form.interest_technology }}
+                        </div>
+                        <div class="form-text">
+                            <span>Not Interested</span>
+                            <span class="float-end">Very Interested</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Business and entrepreneurship</label>
+                        <div class="skill-rating">
+                            {{ form.interest_business }}
+                        </div>
+                        <div class="form-text">
+                            <span>Not Interested</span>
+                            <span class="float-end">Very Interested</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Arts and creativity</label>
+                        <div class="skill-rating">
+                            {{ form.interest_arts }}
+                        </div>
+                        <div class="form-text">
+                            <span>Not Interested</span>
+                            <span class="float-end">Very Interested</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Sciences and research</label>
+                        <div class="skill-rating">
+                            {{ form.interest_sciences }}
+                        </div>
+                        <div class="form-text">
+                            <span>Not Interested</span>
+                            <span class="float-end">Very Interested</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Helping others and society</label>
+                        <div class="skill-rating">
+                            {{ form.interest_helping }}
+                        </div>
+                        <div class="form-text">
+                            <span>Not Interested</span>
+                            <span class="float-end">Very Interested</span>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary prev-section">Back to Soft Skills</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check-circle me-1"></i> Complete Assessment
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    {% if existing_assessment %}
+    <!-- Assessment Results -->
+    <div class="card border-0 shadow-sm mt-4">
+        <div class="card-body p-4">
+            <h4 class="mb-4">Your Current Assessment Results</h4>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Technical Skills</h5>
+                    
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Soft Skills</h5>
+                    
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">Career Interests</h5>
+                 
+                </div>
+                <div class="col-md-6">
+                    <h5 class="mb-3">Identified Strengths</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for skill, score in existing_assessment.strengths.items %}
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            <span>{{ skill|title }}</span>
+                            <span class="badge bg-success rounded-pill">{{ score }}/5</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent">No significant strengths identified</li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <h5 class="mb-3 mt-4">Areas to Improve</h5>
+                    <ul class="list-group list-group-flush">
+                        {% for skill, score in existing_assessment.areas_to_improve.items %}
+                        <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                            <span>{{ skill|title }}</span>
+                            <span class="badge bg-danger rounded-pill">{{ score }}/5</span>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item bg-transparent">No significant areas for improvement identified</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/assessment.js' %}"></script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize assessment navigation
+        initAssessmentNavigation();
+        
+        {% if existing_assessment %}
+        // Set up charts for existing assessment data
+        const technicalSkills = {{ existing_assessment.technical_skills|safe }};
+        const softSkills = {{ existing_assessment.soft_skills|safe }};
+        const interests = {{ existing_assessment.interests|safe }};
+        
+        // Create bar charts
+        createBarChart('technicalSkillsChart', Object.keys(technicalSkills), Object.values(technicalSkills), 'Technical Skills Assessment');
+        createBarChart('softSkillsChart', Object.keys(softSkills), Object.values(softSkills), 'Soft Skills Assessment');
+        createBarChart('interestsChart', Object.keys(interests).map(key => key.replace('interest_', '').charAt(0).toUpperCase() + key.replace('interest_', '').slice(1)), Object.values(interests), 'Career Interests');
+        {% endif %}
+    });
+</script>
+{% endblock %}

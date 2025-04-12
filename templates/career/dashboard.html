@@ -1,0 +1,316 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block title %}Dashboard - Career Advisor{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Dashboard Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2>Your Career Dashboard</h2>
+            <p class="text-muted">
+                Welcome to your personalized career hub. Track your progress, access career tools, and get insights tailored to your profile.
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <div class="btn-group" role="group">
+                <a href="{% url 'skills_assessment' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-brain me-1"></i> Take Assessment
+                </a>
+                <a href="{% url 'profile' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-user-edit me-1"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Completion Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Profile Completion</h5>
+                    <div class="d-flex align-items-center">
+                        <div class="progress flex-grow-1 me-3" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ profile_completion }}%"></div>
+                        </div>
+                        <span class="fw-bold text-success">{{ profile_completion }}%</span>
+                    </div>
+                    
+                    {% if profile_completion < 100 %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Complete your profile to receive more accurate career recommendations.
+                        <a href="{% url 'profile' %}" class="alert-link">Update profile</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- Career Insights Column -->
+        <div class="col-lg-8">
+            <!-- Career Path Recommendation -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Career Path Recommendation</h5>
+                        <a href="{% url 'career_paths' %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                    
+                    {% if career_paths %}
+                    <div class="mb-3">
+                        <h3 class="text-primary mb-2">{{ career_paths.primary_path }}</h3>
+                        <p>{{ career_paths.growth_potential }}</p>
+                        
+                        <div class="mt-3">
+                            <h6>Alternative Paths to Consider:</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for path in career_paths.alternative_paths %}
+                                <span class="badge bg-secondary py-2 px-3">{{ path }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <span>Take a skills assessment to get personalized career path recommendations.</span>
+                        <div class="mt-2">
+                            <a href="{% url 'skills_assessment' %}" class="btn btn-sm btn-primary">Take Assessment</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Skills Assessment Summary -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Skills Assessment Summary</h5>
+                        <a href="{% url 'skills_assessment' %}" class="btn btn-sm btn-outline-primary">View Full Assessment</a>
+                    </div>
+                    
+                    {% if recent_assessment %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-success mb-3">Your Strengths</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for skill, score in recent_assessment.strengths.items %}
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                    <span>{{ skill|title }}</span>
+                                    <span class="badge bg-success rounded-pill">{{ score }}/5</span>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item bg-transparent">No strengths identified yet</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger mb-3">Areas to Improve</h6>
+                            <ul class="list-group list-group-flush">
+                                {% for skill, score in recent_assessment.areas_to_improve.items %}
+                                <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center">
+                                    <span>{{ skill|title }}</span>
+                                    <span class="badge bg-danger rounded-pill">{{ score }}/5</span>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item bg-transparent">No improvement areas identified yet</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <canvas id="skillsRadarChart" height="250"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-brain me-2"></i>
+                        <span>You haven't taken a skills assessment yet.</span>
+                        <div class="mt-2">
+                            <a href="{% url 'skills_assessment' %}" class="btn btn-sm btn-primary">Take Assessment</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Resume Analysis -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Resume Analysis</h5>
+                        <a href="{% url 'resume_analysis' %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                    </div>
+                    
+                    {% if resume_analysis %}
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <div class="position-relative d-inline-block">
+                                    <canvas id="resumeScoreChart" width="120" height="120"></canvas>
+                                    <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                        <h3 class="mb-0">{{ resume_analysis.strength_score }}</h3>
+                                        <small class="text-muted">Score</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Resume Strength: 
+                                    {% if resume_analysis.strength_score >= 8 %}
+                                    <span class="text-success">Strong</span>
+                                    {% elif resume_analysis.strength_score >= 5 %}
+                                    <span class="text-warning">Good</span>
+                                    {% else %}
+                                    <span class="text-danger">Needs Work</span>
+                                    {% endif %}
+                                </h6>
+                                <p class="text-muted mb-0">Last analyzed: {{ resume_analysis.analyzed_at|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h6 class="mb-2">Top 3 Suggestions:</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for suggestion in resume_analysis.suggestions|slice:":3" %}
+                        <li class="list-group-item bg-transparent">
+                            <i class="fas fa-check-circle text-success me-2"></i> {{ suggestion }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-file-alt me-2"></i>
+                        <span>You haven't analyzed your resume yet.</span>
+                        <div class="mt-2">
+                            <a href="{% url 'resume_analysis' %}" class="btn btn-sm btn-primary">Analyze Resume</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'skills_assessment' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-brain me-2"></i> Skills Assessment
+                        </a>
+                        <a href="{% url 'resume_analysis' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-alt me-2"></i> Resume Analysis
+                        </a>
+                        <a href="{% url 'interview_prep' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-comments me-2"></i> Interview Preparation
+                        </a>
+                        <a href="{% url 'career_paths' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-route me-2"></i> Career Paths
+                        </a>
+                        <a href="{% url 'network_analysis' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-project-diagram me-2"></i> Network Analysis
+                        </a>
+                        <a href="{% url 'trending_jobs' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-fire me-2"></i> Trending Jobs
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Job Market Insights Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Job Market Insights</h5>
+                    
+                    {% if job_insights %}
+                    <div class="mb-3">
+                        {% for insight in job_insights %}
+                        <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <h6 class="mb-1">{{ insight.industry }}</h6>
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="me-2">Demand:</span>
+                                <div class="progress flex-grow-1" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ insight.demand_score|floatformat:0 }}0%"></div>
+                                </div>
+                                <span class="ms-2 text-primary fw-bold">{{ insight.demand_score|floatformat:1 }}/10</span>
+                            </div>
+                            <p class="small text-muted mb-1">Avg. Salary: ${{ insight.salary_range.average|floatformat:0 }}</p>
+                            <div class="mt-2">
+                                <h6 class="small">Top Skills:</h6>
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for skill in insight.trending_skills|slice:":3" %}
+                                    <span class="badge bg-secondary">{{ skill }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-chart-line me-2"></i>
+                        <span>Complete a skills assessment to view job market insights.</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Interview Prep Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-4">
+                    <h5 class="mb-3">Interview Preparation</h5>
+                    
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        Generate tailored interview questions and preparation tips for your target role.
+                    </div>
+                    
+                    <div class="d-grid">
+                        <a href="{% url 'interview_prep' %}" class="btn btn-primary">
+                            <i class="fas fa-comments me-2"></i> Prepare for Interviews
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/charts.js' %}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if recent_assessment %}
+        // Prepare data for radar chart
+        const technicalSkills = {{ recent_assessment.technical_skills|safe }};
+        const softSkills = {{ recent_assessment.soft_skills|safe }};
+        
+        // Extract labels and data
+        const technicalLabels = Object.keys(technicalSkills).map(key => key.replace('_', ' ').charAt(0).toUpperCase() + key.replace('_', ' ').slice(1));
+        const technicalData = Object.values(technicalSkills);
+        
+        const softLabels = Object.keys(softSkills).map(key => key.charAt(0).toUpperCase() + key.slice(1));
+        const softData = Object.values(softSkills);
+        
+        // Create radar chart
+        createSkillsRadarChart('skillsRadarChart', technicalLabels, technicalData, softLabels, softData);
+        {% endif %}
+        
+        {% if resume_analysis %}
+        // Create resume score doughnut chart
+        createResumeScoreChart('resumeScoreChart', {{ resume_analysis.strength_score }});
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+/* Main styles for Career Advisor application */
+
+/* Custom Variables */
+:root {
+    --career-primary: var(--bs-primary);
+    --career-secondary: var(--bs-secondary);
+    --career-success: var(--bs-success);
+    --career-danger: var(--bs-danger);
+    --career-warning: var(--bs-warning);
+    --career-info: var(--bs-info);
+}
+
+/* General Styles */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Card Enhancements */
+.card {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.card.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Button Enhancements */
+.btn {
+    border-radius: 0.375rem;
+}
+
+/* Dashboard Cards */
+.feature-card {
+    transition: transform 0.2s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Assessment Styling */
+.assessment-section {
+    transition: all 0.3s ease;
+}
+
+/* Chart Styling */
+.chart-container {
+    position: relative;
+    margin: auto;
+}
+
+/* Resume Analysis */
+.keyword-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+/* Profile Completion Progress Bar */
+.progress-thin {
+    height: 0.5rem !important;
+}
+
+/* Footer Styling */
+footer {
+    margin-top: auto;
+}
+
+/* Custom Animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Interview Prep */
+.question-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Network Visualization */
+.network-container {
+    width: 100%;
+    position: relative;
+}
+
+/* Career Path Cards */
+.path-card-primary {
+    border-left: 4px solid var(--career-primary);
+}
+
+.path-card-secondary {
+    border-left: 4px solid var(--career-secondary);
+}
+
+/* Form Improvements */
+.help-text {
+    font-size: 0.875rem;
+    color: var(--bs-secondary);
+}
+
+/* Radio Button Groups */
+.radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-header-tabs {
+        margin-right: 0;
+        margin-left: 0;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    .skill-rating {
+        justify-content: space-between;
+    }
+}

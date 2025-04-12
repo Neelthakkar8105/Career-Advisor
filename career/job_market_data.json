@@ -1,0 +1,146 @@
+[
+  {
+    "career_path": "Software Development",
+    "demand_score": 9.2,
+    "salary_range": {
+      "min": 70000,
+      "max": 170000,
+      "average": 120000
+    },
+    "top_locations": [
+      "San Francisco, CA",
+      "Seattle, WA",
+      "New York, NY",
+      "Austin, TX",
+      "Boston, MA"
+    ],
+    "trending_skills": [
+      "Cloud Computing (AWS, Azure, GCP)",
+      "DevOps & CI/CD",
+      "React & Modern JavaScript",
+      "Microservices Architecture",
+      "Machine Learning Integration"
+    ],
+    "job_outlook": "Software development continues to see robust growth with a projected 22% increase in jobs over the next decade, much faster than average. The rise of cloud computing, mobile applications, and AI integration is driving demand for skilled developers. Remote work opportunities are abundant, with many companies adopting hybrid or fully remote models."
+  },
+  {
+    "career_path": "Data Science",
+    "demand_score": 9.0,
+    "salary_range": {
+      "min": 80000,
+      "max": 180000,
+      "average": 130000
+    },
+    "top_locations": [
+      "San Francisco, CA",
+      "New York, NY",
+      "Seattle, WA",
+      "Boston, MA",
+      "Chicago, IL"
+    ],
+    "trending_skills": [
+      "Machine Learning & Deep Learning",
+      "Python & R Programming",
+      "Big Data Technologies (Spark, Hadoop)",
+      "Natural Language Processing",
+      "Data Visualization"
+    ],
+    "job_outlook": "Data science remains one of the fastest-growing fields with a projected 31% growth rate through 2030. Organizations across all industries are seeking to leverage their data for competitive advantage. The increasing focus on machine learning and AI applications is creating premium opportunities for those with specialized skills in these areas."
+  },
+  {
+    "career_path": "UX/UI Design",
+    "demand_score": 8.5,
+    "salary_range": {
+      "min": 65000,
+      "max": 150000,
+      "average": 105000
+    },
+    "top_locations": [
+      "San Francisco, CA",
+      "New York, NY",
+      "Seattle, WA",
+      "Los Angeles, CA",
+      "Austin, TX"
+    ],
+    "trending_skills": [
+      "User Research & Testing",
+      "Figma & Design Systems",
+      "Responsive & Mobile Design",
+      "Accessibility Compliance",
+      "Design Thinking"
+    ],
+    "job_outlook": "UX/UI design continues to see strong growth as companies increasingly recognize the business value of user-centered design. The field is projected to grow by 13% over the next decade. Companies are particularly seeking designers who can bridge user needs with business goals and collaborate effectively with product and development teams."
+  },
+  {
+    "career_path": "Project Management",
+    "demand_score": 7.8,
+    "salary_range": {
+      "min": 65000,
+      "max": 150000,
+      "average": 100000
+    },
+    "top_locations": [
+      "New York, NY",
+      "San Francisco, CA",
+      "Chicago, IL",
+      "Washington, DC",
+      "Atlanta, GA"
+    ],
+    "trending_skills": [
+      "Agile & Scrum Methodologies",
+      "Digital Transformation Management",
+      "Remote Team Leadership",
+      "Risk Management",
+      "Strategic Planning"
+    ],
+    "job_outlook": "Project management roles continue to see steady growth with an expected 8% increase through 2029. The increasing complexity of business operations and the rise of digital transformation initiatives are driving demand for skilled project managers. PMP certification and agile expertise remain highly valued by employers."
+  },
+  {
+    "career_path": "Digital Marketing",
+    "demand_score": 8.2,
+    "salary_range": {
+      "min": 55000,
+      "max": 140000,
+      "average": 85000
+    },
+    "top_locations": [
+      "New York, NY",
+      "San Francisco, CA",
+      "Los Angeles, CA",
+      "Chicago, IL",
+      "Austin, TX"
+    ],
+    "trending_skills": [
+      "Data-Driven Marketing Analytics",
+      "Content Marketing Strategy",
+      "SEO & SEM Expertise",
+      "Social Media Marketing",
+      "Marketing Automation"
+    ],
+    "job_outlook": "Digital marketing continues to expand as companies shift more of their budgets from traditional to digital channels. The field is expected to grow by 10% over the next decade. Specialists who can demonstrate clear ROI through analytics and adapt to rapidly changing platforms and algorithms are particularly in demand."
+  },
+  {
+    "career_path": "IT Support & Infrastructure",
+    "demand_score": 7.5,
+    "salary_range": {
+      "min": 50000,
+      "max": 120000,
+      "average": 75000
+    },
+    "top_locations": [
+      "Washington, DC",
+      "New York, NY",
+      "Chicago, IL",
+      "Dallas, TX",
+      "Atlanta, GA"
+    ],
+    "trending_skills": [
+      "Cloud Infrastructure Management",
+      "Cybersecurity",
+      "Network Virtualization",
+      "Automation & Scripting",
+      "Remote Support Solutions"
+    ],
+    "job_outlook": "IT support and infrastructure roles are evolving with the shift to cloud computing and remote work. Overall growth is projected at 9% through 2030. While some traditional roles may see slower growth, specialists in cloud infrastructure, cybersecurity, and automation tools are seeing increased demand and higher compensation."
+  }
+]
