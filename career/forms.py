@@ -112,3 +112,6 @@ class InterviewPrepForm(forms.Form):
         required=False,
         help_text="Optional: Enter the company name for more tailored advice"
     )
+class ResumeUploadForm(forms.Form):
+    """Form for uploading a resume file"""
+    resume_file = forms.FileField(label='Upload your resume')

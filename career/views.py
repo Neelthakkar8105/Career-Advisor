@@ -1,4 +1,8 @@
 import json
+from docx import Document  # Add this import for handling .docx files
+import spacy
+nlp = spacy.load("en_core_web_sm")
+from django.conf import settings
 import requests
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -17,7 +21,8 @@ from .models import (
 from .forms import (
     SkillsAssessmentForm,
     ResumeAnalysisForm,
-    InterviewPrepForm
+    InterviewPrepForm,
+    ResumeUploadForm  # Import ResumeUploadForm
 )
 from .recommendation_engine import (
     analyze_resume,
@@ -191,59 +196,117 @@ def skills_assessment(request):
     return render(request, 'career/skills_assessment.html', context)
 
 
+def analyze_resume(resume_text):
+    """
+    Analyze the resume for strengths, weaknesses, and general tips using NLP.
+    """
+    tips = []
+    strengths = []
+    weaknesses = []
+    doc = nlp(resume_text)  # Process the resume text with spaCy
+
+    # Debugging log to ensure resume_text is valid
+    print(f"Debug: Inside analyze_resume, type of resume_text: {type(resume_text)}, content: {resume_text[:100]}")
+
+    # Extract skills and technologies mentioned in the resume
+    skill_keywords = ['python', 'java', 'sql', 'aws', 'javascript', 'react', 'angular', 'django', 'flask']
+    found_skills = [skill for skill in skill_keywords if skill in resume_text.lower()]
+    if found_skills:
+        strengths.extend([skill.capitalize() for skill in found_skills])
+        for skill in found_skills:
+            tips.append(f"Your {skill.upper()} skills are valuable. Consider enhancing them further with advanced projects or certifications.")
+    else:
+        weaknesses.append("No technical skills detected.")
+        tips.append("Consider adding technical skills relevant to your field, such as programming languages or tools.")
+
+    # Analyze work experience
+    experience_phrases = ['years of experience', 'worked at', 'managed', 'led', 'developed']
+    if any(phrase in resume_text.lower() for phrase in experience_phrases):
+        strengths.append("Work experience")
+        tips.append("Your work experience is noted. Highlighting specific achievements with metrics can make your resume stand out.")
+    else:
+        weaknesses.append("No work experience mentioned.")
+        tips.append("Consider adding details about your work experience or internships to showcase your practical skills.")
+
+    # Analyze education background
+    education_keywords = ['bachelor', 'master', 'phd', 'degree', 'certification']
+    if any(keyword in resume_text.lower() for keyword in education_keywords):
+        strengths.append("Educational qualifications")
+        tips.append("Your educational background is noted. Highlighting relevant projects or honors can further boost your resume.")
+    else:
+        weaknesses.append("No educational details provided.")
+        tips.append("Consider including your educational background or certifications to provide a fuller picture of your qualifications.")
+
+    # Extract soft skills
+    soft_skill_keywords = ['communication', 'teamwork', 'leadership', 'problem-solving', 'critical thinking']
+    found_soft_skills = [skill for skill in soft_skill_keywords if skill in resume_text.lower()]
+    if found_soft_skills:
+        strengths.extend([skill.capitalize() for skill in found_soft_skills])
+        tips.append("Your soft skills are valuable. Provide examples where these skills have contributed to your success.")
+    else:
+        weaknesses.append("No soft skills mentioned.")
+        tips.append("Consider mentioning soft skills to give a well-rounded view of your abilities.")
+
+    # Use NLP to identify named entities (e.g., organizations, roles)
+    for ent in doc.ents:
+        if ent.label_ == "ORG":
+            strengths.append(f"Experience with {ent.text}")
+        elif ent.label_ in ["JOB_TITLE", "PERSON"]:
+            strengths.append(f"Role: {ent.text}")
+
+    return {
+        'tips': tips,
+        'strengths': list(set(strengths)),  # Remove duplicates
+        'weaknesses': list(set(weaknesses)),  # Remove duplicates
+    }
+
+
 @login_required
 def resume_analysis(request):
-    """Handle resume analysis and improvement suggestions"""
-    # Check if user has already had a resume analysis
-    try:
-        existing_analysis = ResumeAnalysis.objects.filter(user=request.user).latest('analyzed_at')
-    except ResumeAnalysis.DoesNotExist:
-        existing_analysis = None
-    
     if request.method == 'POST':
-        form = ResumeAnalysisForm(request.POST)
+        form = ResumeUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            resume_text = form.cleaned_data['resume_text'] or request.user.profile.resume
-            job_title = form.cleaned_data['job_title']
-            
-            # Analyze the resume for the specific job title
-            analysis_results = analyze_resume(resume_text, job_title)
-            
-            # Save the analysis results
-            analysis = ResumeAnalysis(
-                user=request.user,
-                strength_score=analysis_results['strength_score'],
-                weaknesses=analysis_results['weaknesses'],
-                suggestions=analysis_results['suggestions'],
-                keyword_analysis=analysis_results['keyword_analysis'],
-                improvement_plan=analysis_results['improvement_plan']
-            )
-            analysis.save()
-            
-            # Update the user's resume in their profile if provided
-            if form.cleaned_data['resume_text']:
-                request.user.profile.resume = form.cleaned_data['resume_text']
-                request.user.profile.save()
-            
-            messages.success(request, 'Resume analysis completed successfully!')
-            return redirect('resume_analysis')
+            resume_file = request.FILES.get('resume_file')  # Safely retrieve the uploaded file
+            if not resume_file:
+                messages.error(request, 'No file uploaded. Please upload a valid resume file.')
+                return redirect('resume_analysis')
+
+            try:
+                resume_text = extract_text_from_file(resume_file)  # Extract text from the uploaded file
+                if not isinstance(resume_text, str) or not resume_text.strip():
+                    raise ValueError("Extracted resume text is empty or invalid.")
+            except Exception as e:
+                messages.error(request, f"Error processing the file: {str(e)}")
+                return redirect('resume_analysis')
+
+            # Analyze the resume for strengths, weaknesses, and tips
+            try:
+                print(f"Debug: Type of resume_text: {type(resume_text)}")  # Debugging log
+                analysis_results = analyze_resume(resume_text)  # Pass the extracted text to analyze_resume
+                print(f"Debug: Analysis results: {analysis_results}")  # Debugging log
+            except Exception as e:
+                messages.error(request, f"Error analyzing the resume: {str(e)}")
+                return redirect('resume_analysis')
+
+            context = {
+                'tips_title': "Your Personalized Resume Analysis",
+                'tips': analysis_results.get('tips', []),
+                'strengths': analysis_results.get('strengths', []),
+                'weaknesses': analysis_results.get('weaknesses', []),
+            }
+            return render(request, 'resume_tips/tips_results.html', context)
+        else:
+            messages.error(request, 'Invalid form submission. Please try again.')
     else:
-        # Pre-populate form with user's existing resume if available
-        initial_data = {}
-        if request.user.profile.resume:
-            initial_data['resume_text'] = request.user.profile.resume
-        
-        # If user has a desired position, use that as default job title
-        if request.user.profile.desired_position:
-            initial_data['job_title'] = request.user.profile.desired_position
-            
-        form = ResumeAnalysisForm(initial=initial_data)
-    
-    context = {
-        'form': form,
-        'analysis': existing_analysis
-    }
-    return render(request, 'career/resume_analysis.html', context)
+        form = ResumeUploadForm()
+    return render(request, 'resume_tips/upload_resume.html', {'form': form})
+
+
+def extract_text_from_file(file):
+    """Extract text from an uploaded file (e.g., .docx or .pdf)."""
+    # Example for .docx files
+    document = Document(file)
+    return '\n'.join([paragraph.text for paragraph in document.paragraphs])
 
 
 @login_required
@@ -537,3 +600,44 @@ def skill_based_recommendation(request):
             return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+from django.shortcuts import render, redirect
+from .models import QuizQuestion
+import random
+
+def select_subject(request):
+    subjects = ['Python', 'Web Development', 'Soft Skills']
+    return render(request, 'career/select_subject.html', {'subjects': subjects})
+
+def start_quiz(request, subject):
+    questions = list(QuizQuestion.objects.filter(subject=subject))
+    random.shuffle(questions)
+    selected_questions = questions[:5]  # Pick 5 random questions
+    return render(request, 'career/quiz.html', {'questions': selected_questions, 'subject': subject})
+
+def submit_quiz(request, subject):
+    if request.method == 'POST':
+        questions = QuizQuestion.objects.filter(subject=subject)
+        score = 0
+        total = 0
+        feedback = []
+
+        for i, question in enumerate(questions[:5], 1):
+            user_answer = request.POST.get(f'q{i}')
+            correct = question.correct_option
+            if user_answer == correct:
+                score += 1
+            feedback.append({
+                'question': question.question,
+                'your_answer': user_answer,
+                'correct_answer': correct,
+                'is_correct': user_answer == correct,
+            })
+            total += 1
+
+        return render(request, 'career/feedback.html', {
+            'score': score,
+            'total': total,
+            'feedback': feedback,
+            'subject': subject
+        })
+    return redirect('select_subject')

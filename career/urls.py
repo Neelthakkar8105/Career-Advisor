@@ -10,4 +10,7 @@ urlpatterns = [
     path('network-analysis/', views.network_analysis, name='network_analysis'),
     path('trending-jobs/', views.trending_jobs, name='trending_jobs'),
     path('skill-based-recommendation/', views.skill_based_recommendation, name='skill_based_recommendation'),
+    path('quiz/', views.select_subject, name='select_subject'),
+    path('quiz/start/<str:subject>/', views.start_quiz, name='start_quiz'),
+    path('quiz/submit/<str:subject>/', views.submit_quiz, name='submit_quiz'),
 ]

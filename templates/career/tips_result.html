@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>{{ tips_title }}</h1>
+    
+    <section class="mb-4">
+        <h2>Strengths</h2>
+        {% if strengths %}
+            <ul class="list-group">
+                {% for strength in strengths %}
+                    <li class="list-group-item list-group-item-success">{{ strength }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No strengths identified.</p>
+        {% endif %}
+    </section>
+
+    <section class="mb-4">
+        <h2>Weaknesses</h2>
+        {% if weaknesses %}
+            <ul class="list-group">
+                {% for weakness in weaknesses %}
+                    <li class="list-group-item list-group-item-danger">{{ weakness }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No weaknesses detected.</p>
+        {% endif %}
+    </section>
+
+    <section class="mb-4">
+        <h2>General Tips</h2>
+        {% if tips %}
+            <ul class="list-group">
+                {% for tip in tips %}
+                    <li class="list-group-item">{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No tips available.</p>
+        {% endif %}
+    </section>
+    
+    <a href="{% url 'resume_analysis' %}" class="btn btn-secondary mt-3">Upload Another Resume</a>
+</div>
+{% endblock %}

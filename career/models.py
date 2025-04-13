@@ -75,5 +75,24 @@ class InterviewPrep(models.Model):
         return f"Interview Prep for {self.job_title} - {self.user.username}"
     from django.db import models
 
+# career/models.py
+
+class QuizQuestion(models.Model):
+    SUBJECT_CHOICES = [
+        ('Python', 'Python'),
+        ('Web Development', 'Web Development'),
+        ('Soft Skills', 'Soft Skills'),
+    ]
+
+    subject = models.CharField(max_length=100, choices=SUBJECT_CHOICES)
+    question = models.TextField()
+    option_a = models.CharField(max_length=200)
+    option_b = models.CharField(max_length=200)
+    option_c = models.CharField(max_length=200)
+    option_d = models.CharField(max_length=200)
+    correct_option = models.CharField(max_length=1)  # 'A', 'B', 'C', or 'D'
+
+
+
 
 

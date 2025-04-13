@@ -1,0 +1,53 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .chat-box { border: 1px solid #ccc; padding: 10px; max-width: 500px; margin: auto; }
+        .message { margin-bottom: 10px; }
+        .user { font-weight: bold; color: blue; }
+        .bot { color: green; }
+    </style>
+</head>
+<body>
+    <div class="chat-box">
+        <h2>Ask me anything!</h2>
+        <div id="chat-log"></div>
+        <input type="text" id="message" placeholder="Type your question..." style="width: 70%;">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            if (!message) return;
+        
+            const chatLog = document.getElementById("chat-log");
+            chatLog.innerHTML += `<div class='user'>You: ${message}</div>`;
+            document.getElementById("message").value = "";
+        
+            fetch("/chat/api/chat/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => {
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Expected JSON response, got HTML or something else");
+                }
+                return response.json();
+            })
+            .then(data => {
+                chatLog.innerHTML += `<div class='bot'>Bot: ${data.reply}</div>`;
+                chatLog.scrollTop = chatLog.scrollHeight;
+            })
+            .catch(error => {
+                chatLog.innerHTML += `<div class='bot'>❌ Something went wrong: ${error.message}</div>`;
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>

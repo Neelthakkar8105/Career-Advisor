@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Analysis Results{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{{ tips_title }}</h2>
+
+    <h4>Strengths</h4>
+    <ul>
+        {% for strength in strengths %}
+        <li>{{ strength }}</li>
+        {% empty %}
+        <li>No strengths identified.</li>
+        {% endfor %}
+    </ul>
+
+    <h4>Weaknesses</h4>
+    <ul>
+        {% for weakness in weaknesses %}
+        <li>{{ weakness }}</li>
+        {% empty %}
+        <li>No weaknesses identified.</li>
+        {% endfor %}
+    </ul>
+
+    <h4>Tips</h4>
+    <ul>
+        {% for tip in tips %}
+        <li>{{ tip }}</li>
+        {% empty %}
+        <li>No tips available.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'resume_analysis' %}" class="btn btn-primary mt-3">Analyze Another Resume</a>
+</div>
+{% endblock %}

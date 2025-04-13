@@ -223,47 +223,21 @@
                         <a href="{% url 'trending_jobs' %}" class="btn btn-outline-primary">
                             <i class="fas fa-fire me-2"></i> Trending Jobs
                         </a>
+                        <a href="{% url 'select_subject' %}" class="btn btn-primary">Take Quiz</a>
+                        <a href="/chat/">
+                            <button style="padding: 10px 20px; font-size: 16px; margin-top: 20px;">
+                                Chat with Career Advisor
+                            </button>
+                        </a>
+                        
+
+
                     </div>
                 </div>
             </div>
             
             <!-- Job Market Insights Card -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <h5 class="mb-3">Job Market Insights</h5>
-                    
-                    {% if job_insights %}
-                    <div class="mb-3">
-                        {% for insight in job_insights %}
-                        <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
-                            <h6 class="mb-1">{{ insight.industry }}</h6>
-                            <div class="d-flex align-items-center mb-2">
-                                <span class="me-2">Demand:</span>
-                                <div class="progress flex-grow-1" style="height: 8px;">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ insight.demand_score|floatformat:0 }}0%"></div>
-                                </div>
-                                <span class="ms-2 text-primary fw-bold">{{ insight.demand_score|floatformat:1 }}/10</span>
-                            </div>
-                            <p class="small text-muted mb-1">Avg. Salary: ${{ insight.salary_range.average|floatformat:0 }}</p>
-                            <div class="mt-2">
-                                <h6 class="small">Top Skills:</h6>
-                                <div class="d-flex flex-wrap gap-1">
-                                    {% for skill in insight.trending_skills|slice:":3" %}
-                                    <span class="badge bg-secondary">{{ skill }}</span>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <div class="alert alert-secondary">
-                        <i class="fas fa-chart-line me-2"></i>
-                        <span>Complete a skills assessment to view job market insights.</span>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+            
             
             <!-- Interview Prep Card -->
             <div class="card border-0 shadow-sm mb-4">
