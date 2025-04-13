@@ -1,7 +1,12 @@
 import json
+import requests
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from .models import (
     SkillsAssessment, 
     CareerPath, 
@@ -342,17 +347,44 @@ def career_paths(request):
 
 @login_required
 def trending_jobs(request):
-    """Display trending jobs and their insights"""
-    # Load job market data
-    job_market_data = load_job_market_data()
-    
-    # Sort jobs by demand score to get trending jobs
-    trending_jobs = sorted(job_market_data, key=lambda x: x['demand_score'], reverse=True)
-    
-    context = {
-        'trending_jobs': trending_jobs[:5],  # Top 5 trending jobs
-    }
-    return render(request, 'career/trending_jobs.html', context)
+    jobs = []
+    error = None
+
+    if request.method == 'POST':
+        keyword = request.POST.get('keyword', '')
+        location = request.POST.get('location', '')
+
+        # Replace 'in' with 'us' if you're not getting results
+        country_code = 'in'  # or 'us', 'gb', etc.
+        url = f'https://api.adzuna.com/v1/api/jobs/{country_code}/search/1'
+        params = {
+            'app_id': '5d1b0e47',  # Replace with your App ID
+            'app_key': '72066aeb38655102d452923521a16046	',  # Replace with your App Key
+            'results_per_page': 100,
+            'what': keyword,
+            'where': location,
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            print("Request URL:", response.url)
+            print("Status Code:", response.status_code)
+
+            if response.status_code == 200:
+                data = response.json()
+                jobs = data.get('results', [])
+                if not jobs:
+                    error = "No jobs found for the given query."
+            else:
+                # Show full error message from Adzuna
+                print("Error Response:", response.text)
+                error = f"Error fetching data: {response.status_code} - {response.reason}"
+
+        except Exception as e:
+            print("Exception occurred:", e)
+            error = f"An error occurred: {str(e)}"
+
+    return render(request, 'career/trending_jobs.html', {'jobs': jobs, 'error': error})
 
 @login_required
 def network_analysis(request):
@@ -416,3 +448,92 @@ def network_analysis(request):
         'career_path': career_path
     }
     return render(request, 'career/network_analysis.html', context)
+
+
+# recommendations/views.py
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+# Example career data for recommendation
+CAREER_DATA = [
+    {"career": "Data Scientist", "skills": "machine learning, data analysis, python, statistics"},
+    {"career": "Web Developer", "skills": "html, css, javascript, react, frontend development"},
+    {"career": "Backend Developer", "skills": "python, django, databases, api development"},
+    {"career": "AI Engineer", "skills": "deep learning, neural networks, python, nlp"},
+    {"career": "Cybersecurity Analyst", "skills": "network security, penetration testing, cryptography, risk assessment"},
+    {"career": "Cloud Engineer", "skills": "aws, azure, cloud computing, devops, kubernetes"},
+    {"career": "Mobile App Developer", "skills": "android, ios, flutter, react native, mobile development"},
+    {"career": "Game Developer", "skills": "unity, unreal engine, c++, game design, 3d modeling"},
+    {"career": "Digital Marketing Specialist", "skills": "seo, social media marketing, content creation, google ads, analytics"},
+    {"career": "Product Manager", "skills": "product strategy, agile, user research, roadmaps, stakeholder management"},
+    {"career": "UI/UX Designer", "skills": "user interface design, user experience, wireframing, prototyping, figma"},
+    {"career": "DevOps Engineer", "skills": "ci/cd, docker, kubernetes, linux, automation"},
+    {"career": "Blockchain Developer", "skills": "blockchain, solidity, smart contracts, ethereum, cryptography"},
+    {"career": "Machine Learning Engineer", "skills": "tensorflow, pytorch, machine learning, data preprocessing, algorithms"},
+    {"career": "Data Engineer", "skills": "big data, hadoop, spark, sql, data pipelines"},
+    {"career": "Business Analyst", "skills": "business analysis, requirements gathering, process improvement, data visualization"},
+    {"career": "Technical Writer", "skills": "technical documentation, writing, editing, api documentation, communication"},
+    {"career": "Network Engineer", "skills": "networking, cisco, routing, switching, network troubleshooting"},
+    {"career": "IT Support Specialist", "skills": "technical support, troubleshooting, hardware, software, customer service"},
+    {"career": "E-commerce Specialist", "skills": "e-commerce platforms, online sales, digital marketing, inventory management"},
+    {"career": "Robotics Engineer", "skills": "robotics, automation, c++, embedded systems, mechanical design"},
+    {"career": "Healthcare Data Analyst", "skills": "healthcare analytics, data visualization, sql, python, statistics"},
+    {"career": "Environmental Scientist", "skills": "environmental science, data analysis, gis, sustainability, research"},
+    {"career": "Financial Analyst", "skills": "financial modeling, excel, data analysis, accounting, investment research"},
+    {"career": "Content Creator", "skills": "video editing, social media, content strategy, storytelling, graphic design"},
+    {"career": "Salesforce Developer", "skills": "salesforce, crm, apex, lightning, integration"},
+    {"career": "AI Researcher", "skills": "artificial intelligence, deep learning, research, algorithms, python"},
+    {"career": "Operations Manager", "skills": "operations management, process optimization, leadership, logistics, planning"},
+    {"career": "HR Specialist", "skills": "recruitment, employee relations, hr policies, payroll, training"},
+]
+
+def recommendations_view(request):
+    # Example context data
+    context = {
+        'title': 'Recommendations',
+        'recommendations': [],  # Add dynamic recommendations here
+    }
+    return render(request, 'career/career_paths.html', context)
+
+def career_paths(request):
+    """
+    View to generate and display recommendations.
+    """
+    context = {
+        'title': 'Recommendations',
+        'recommendations': ['Example Recommendation 1', 'Example Recommendation 2'],  # Replace with dynamic logic
+    }
+    return render(request, 'career/career_paths.html', context)
+
+@csrf_exempt
+def skill_based_recommendation(request):
+    """
+    View to generate recommendations based on user-entered skills.
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            user_skills = data.get("skills", "")
+
+            if not user_skills:
+                return JsonResponse({"error": "No skills provided."}, status=400)
+
+            # Use TF-IDF and cosine similarity for skill matching
+            vectorizer = TfidfVectorizer()
+            all_skills = [career["skills"] for career in CAREER_DATA] + [user_skills]
+            tfidf_matrix = vectorizer.fit_transform(all_skills)
+            similarity_scores = cosine_similarity(tfidf_matrix[-1], tfidf_matrix[:-1]).flatten()
+
+            # Get top recommendations (increase the number of top indices)
+            top_indices = similarity_scores.argsort()[-6:][::-1]  # Adjust the number here (e.g., 5 for more recommendations)
+            recommendations = [CAREER_DATA[i]["career"] for i in top_indices]
+
+            return JsonResponse({"recommendations": recommendations})
+        except Exception as e:
+            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+

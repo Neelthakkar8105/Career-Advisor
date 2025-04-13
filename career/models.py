@@ -73,3 +73,7 @@ class InterviewPrep(models.Model):
 
     def __str__(self):
         return f"Interview Prep for {self.job_title} - {self.user.username}"
+    from django.db import models
+
+
+

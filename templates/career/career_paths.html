@@ -70,19 +70,63 @@
     </div>
     
     {% if not career_path %}
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body p-4 text-center">
-            <i class="fas fa-route fa-4x mb-3 text-muted"></i>
-            <h4>No Career Path Recommendations Yet</h4>
-            <p class="text-muted mb-4">
-                Complete a skills assessment to receive personalized career path recommendations.
-                Our AI will analyze your strengths, interests, and experience to suggest optimal career paths.
-            </p>
-            <a href="{% url 'skills_assessment' %}" class="btn btn-primary">
-                <i class="fas fa-brain me-1"></i> Take Skills Assessment
-            </a>
+    <div class="container mt-4">
+       
+        <div class="mt-4">
+            <h2>Get Recommendations Based on Your Skills</h2>
+            <form id="skillForm">
+                <div class="mb-3">
+                    <label for="skills" class="form-label">Enter your skills (comma-separated):</label>
+                    <input type="text" id="skills" class="form-control" placeholder="e.g., python, machine learning">
+                </div>
+                <button type="submit" class="btn btn-primary">Get Recommendations</button>
+            </form>
+            <div id="skillRecommendations" class="mt-3">
+                <h3>Recommendations:</h3>
+                <ul id="recommendationList"></ul>
+            </div>
         </div>
     </div>
+    <script>
+        document.getElementById("skillForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const skills = document.getElementById("skills").value;
+            const list = document.getElementById("recommendationList");
+            list.innerHTML = ""; // Clear previous recommendations
+
+            try {
+                const response = await fetch("{% url 'skill_based_recommendation' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}",
+                    },
+                    body: JSON.stringify({ skills }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.recommendations) {
+                    data.recommendations.forEach(rec => {
+                        const li = document.createElement("li");
+                        li.textContent = rec;
+                        list.appendChild(li);
+                    });
+                } else if (data.error) {
+                    const li = document.createElement("li");
+                    li.textContent = data.error;
+                    list.appendChild(li);
+                }
+            } catch (error) {
+                const li = document.createElement("li");
+                li.textContent = `An error occurred: ${error.message}`;
+                list.appendChild(li);
+            }
+        });
+    </script>
     {% else %}
     <!-- Main Career Path Recommendation -->
     <div class="row">
@@ -120,100 +164,10 @@
                 </div>
             </div>
             
-            <!-- Alternative Career Paths -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent">
-                    <h4 class="mb-0">Alternative Career Paths</h4>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted mb-4">
-                        These are other career paths that align well with your skills and interests. 
-                        Consider these as viable alternatives to your primary recommendation.
-                    </p>
-                    
-                    <div class="row">
-                        {% for path in career_path.alternative_paths %}
-                        <div class="col-md-4 mb-3">
-                            <div class="card h-100 alternative-path-card">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ path }}</h5>
-                                    <p class="card-text small text-muted">
-                                        This path aligns with your skills profile and offers alternative growth opportunities.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Job Market Sidebar -->
-        <div class="col-lg-4">
-            <!-- Job Market Insights -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0">Job Market Insights</h5>
-                </div>
-                <div class="card-body p-4">
-                    {% if job_market %}
-                    <div class="mb-3">
-                        <h6>Industry Demand</h6>
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="progress flex-grow-1 me-2" style="height: 8px;">
-                                <div class="progress-bar" role="progressbar" style="width: {{ job_market.demand_score|floatformat:0 }}0%"></div>
-                            </div>
-                            <span class="text-primary fw-bold">{{ job_market.demand_score|floatformat:1 }}/10</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>Salary Range</h6>
-                        <div class="d-flex align-items-center mb-3">
-                            <span class="me-2 text-muted">${{ job_market.salary_range.min|floatformat:0 }}</span>
-                            <div class="progress flex-grow-1" style="height: 4px;">
-                                <div class="progress-bar" role="progressbar" style="width: 100%"></div>
-                            </div>
-                            <span class="ms-2 text-muted">${{ job_market.salary_range.max|floatformat:0 }}</span>
-                        </div>
-                        <p class="text-center mb-0">
-                            <span class="text-primary fw-bold">Average: ${{ job_market.salary_range.average|floatformat:0 }}</span>
-                        </p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>Top Hiring Locations</h6>
-                        <ul class="list-group list-group-flush">
-                            {% for location in job_market.top_locations|slice:":5" %}
-                            <li class="list-group-item bg-transparent px-0 py-2">
-                                <i class="fas fa-map-marker-alt text-primary me-2"></i> {{ location }}
-                            </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6>In-Demand Skills</h6>
-                        <div>
-                            {% for skill in job_market.trending_skills %}
-                            <span class="badge bg-secondary my-1 me-1">{{ skill }}</span>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h6>Job Outlook</h6>
-                        <p class="small mb-0">{{ job_market.job_outlook }}</p>
-                    </div>
-                    {% else %}
-                    <div class="alert alert-info mb-0">
-                        <i class="fas fa-info-circle me-2"></i>
-                        Job market data is not available for this career path.
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+
+            
+           
+              
             
             <!-- Related Resources -->
             <div class="card border-0 shadow-sm mb-4">
